@@ -1,0 +1,10 @@
+{:paths ["src"]
+
+ :deps {org.clojure/clojure
+        {:mvn/version "1.12.6"}}
+
+ :aliases
+ {:test
+  {:extra-paths ["test"]
+   :extra-deps {midje/midje
+                {:mvn/version "1.10.10"}}}}}
