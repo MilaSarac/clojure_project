@@ -136,3 +136,27 @@
             (create-training-instance dataset example)))
 
     dataset))
+
+
+;;training the decision tree model
+
+(defn train-decision-tree [examples]
+  (when (< (count examples) 2)
+    (throw
+      (ex-info "At least two training examples are required."
+               {:number-of-examples (count examples)})))
+
+  (when (< (count (distinct (map :needs_support examples))) 2)
+    (throw
+      (ex-info "Training data must contain both classes: 0 and 1."
+               {:available-classes
+                (distinct (map :needs_support examples))})))
+
+  (let [dataset (create-training-dataset examples)
+        classifier (J48.)]
+
+    (.buildClassifier classifier dataset)
+    (println "Decision Tree:")
+    (println (.toString classifier))
+    {:classifier classifier
+     :dataset dataset}))
