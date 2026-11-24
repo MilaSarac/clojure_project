@@ -160,3 +160,55 @@
     (println (.toString classifier))
     {:classifier classifier
      :dataset dataset}))
+
+
+;;support prediction
+
+(defn create-prediction-instance [dataset dancer]
+  (let [instance
+        (DenseInstance.
+          1.0
+          (double-array
+            [(double (:difficulties dancer))
+             (double (:progress dancer))
+             (double (:absences dancer))
+             0.0]))]
+
+    (.setDataset instance dataset)
+    (.setMissing instance 3)
+
+    instance))
+
+
+(defn predict-support [model dancer]
+  (let [classifier (:classifier model)
+        dataset (:dataset model)
+        instance (create-prediction-instance dataset dancer)
+        prediction (.classifyInstance classifier instance)
+        class-index (int prediction)
+        probabilities (.distributionForInstance classifier instance)]
+
+    {:needs-support? (= class-index 1)
+     :confidence (aget probabilities class-index)}))
+
+
+;;analyzing dancers
+
+(defn analyze-dancer [model dancer]
+  (let [prediction (predict-support model dancer)]
+
+    (assoc dancer
+      :observations (collect-observations dancer)
+      :needs-support? (:needs-support? prediction)
+      :confidence (:confidence prediction))))
+
+
+(defn analyze-dancers [model dancers]
+  (mapv
+    (fn [dancer]
+      (analyze-dancer model dancer))
+    dancers))
+
+
+(defn find-dancers-needing-support [analyzed-dancers]
+  (filterv :needs-support? analyzed-dancers))
