@@ -87,3 +87,52 @@
           (conj "Frequent absences")))
 
 
+;;preparing data
+
+(defn create-attributes []
+  (let [attributes (ArrayList.)
+        class-values (ArrayList.)]
+
+    (.add attributes (Attribute. "difficulties"))
+    (.add attributes (Attribute. "progress"))
+    (.add attributes (Attribute. "absences"))
+
+    (.add class-values "no")
+    (.add class-values "yes")
+
+    (.add attributes
+          (Attribute. "needs_support" class-values))
+
+    attributes))
+
+
+(defn create-training-instance [dataset example]
+  (let [instance
+        (DenseInstance.
+          1.0
+          (double-array
+            [(double (:difficulties example))
+             (double (:progress example))
+             (double (:absences example))
+             (if (zero? (:needs_support example))
+               0.0
+               1.0)]))]
+
+    (.setDataset instance dataset)
+    instance))
+
+
+(defn create-training-dataset [examples]
+  (let [dataset
+        (Instances.
+          "ballet-support"
+          (create-attributes)
+          (count examples))]
+
+    (.setClassIndex dataset 3)
+
+    (doseq [example examples]
+      (.add dataset
+            (create-training-instance dataset example)))
+
+    dataset))
