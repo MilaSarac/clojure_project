@@ -212,3 +212,47 @@
 
 (defn find-dancers-needing-support [analyzed-dancers]
   (filterv :needs-support? analyzed-dancers))
+
+;;reports
+
+(defn generate-support-report [analyzed-dancers]
+  (mapv
+    (fn [dancer]
+      {:name (:name dancer)
+       :observations (:observations dancer)
+       :needs-support? (:needs-support? dancer)
+       :confidence
+       (format "%.2f%%" (* 100.0 (:confidence dancer)))})
+    analyzed-dancers))
+
+
+(defn run-analysis []
+  (let [training-examples (load-training-examples)
+        dancers (load-dancers)
+        model (train-decision-tree training-examples)
+        analyzed-dancers (analyze-dancers model dancers)
+        dancers-needing-support
+        (find-dancers-needing-support analyzed-dancers)
+        report (generate-support-report dancers-needing-support)]
+
+    {:analyzed-count (count dancers)
+     :support-count (count dancers-needing-support)
+     :report report}))
+
+
+(defn -main [& args]
+  (try
+    (println "Checking database connection...")
+
+    (check-database-connection)
+
+    (println "Database connection successful!")
+    (println "Starting analysis...")
+
+    (let [result (run-analysis)]
+      (println "\nANALYSIS RESULTS:")
+      (pprint/pprint result))
+
+    (catch Exception exception
+      (println "An error occurred:")
+      (println (.getMessage exception)))))
